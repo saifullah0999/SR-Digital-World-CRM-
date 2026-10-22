@@ -4,87 +4,136 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>SR Digital World — Subscription Hub</title>
+<title>SR Digital World — Business Dashboard</title>
 <style>
+  :root{--primary:#FA920B;--accent:#FF8200;--text:#222222;--muted:#5B6270;--bg:#FFFFFF;--bg-soft:#F6F7FB;--card:#FFFFFF;--border:#E7E9F2;--cta:#15803D}
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif}
-  body{background:#ECECF6;color:#191938;min-height:100vh}
+  body{background:var(--bg-soft);color:var(--text);min-height:100vh}
   a{text-decoration:none}
+  button{font-family:inherit}
   .hidden{display:none!important}
 
-  /* ---------- HEADER ---------- */
-  .hero{background:linear-gradient(115deg,#5B21B6 0%,#7C3AED 45%,#C026D3 100%);color:#fff;padding:26px 34px 92px;border-radius:0 0 28px 28px}
-  .hero-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:13px}
-  .logo{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;letter-spacing:.5px}
-  .brand h1{font-size:21px;letter-spacing:1.5px;line-height:1.1}
-  .brand small{font-size:11px;letter-spacing:4px;opacity:.85;font-weight:600}
-  .nav{display:flex;gap:8px;flex-wrap:wrap}
-  .nav a{color:#fff;font-weight:600;font-size:14px;padding:9px 17px;border-radius:999px;opacity:.92}
-  .nav a.active{background:#fff;color:#5B21B6;opacity:1}
-  .nav a:hover{opacity:1;background:rgba(255,255,255,.18)}
-  .nav a.active:hover{background:#fff}
-  .hero-label{margin-top:32px;font-size:12.5px;letter-spacing:3px;font-weight:700;opacity:.85;text-transform:uppercase}
-  .hero-num{font-size:52px;font-weight:800;line-height:1.08;margin-top:4px}
-  .hero-sub{font-size:14.5px;opacity:.9;margin-top:2px}
+  /* ---------- TOP BAR ---------- */
+  .topbar{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:0 2px 12px rgba(34,34,34,.05)}
+  .topbar-in{max-width:1024px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:12px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;letter-spacing:.5px;flex:none}
+  .bname{font-size:18px;font-weight:800;color:var(--text);line-height:1.15}
+  .bsub{font-size:12px;color:var(--muted);font-weight:600}
+  .top-right{display:flex;align-items:center;gap:10px}
+  .updated{font-size:12px;color:var(--muted)}
+  .iconbtn{background:var(--bg-soft);border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-size:15px;cursor:pointer}
+  .iconbtn:hover{border-color:var(--primary)}
+  .tabs{max-width:1024px;margin:0 auto;padding:14px 20px 0;display:flex;gap:8px;flex-wrap:wrap}
+  .vtab{background:var(--card);border:1.5px solid var(--border);color:var(--text);font-weight:700;font-size:14px;padding:9px 18px;border-radius:999px;cursor:pointer}
+  .vtab:hover{border-color:var(--primary)}
+  .vtab.on{background:var(--primary);border-color:var(--primary);color:#fff}
 
   /* ---------- LAYOUT ---------- */
-  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 34px}
-  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:-58px}
-  .card{background:#fff;border-radius:20px;box-shadow:0 12px 32px rgba(41,16,105,.13);padding:20px 22px}
-  .card .k{font-size:11.5px;letter-spacing:2.2px;color:#8A8AA3;font-weight:700;text-transform:uppercase}
-  .card .v{font-size:29px;font-weight:800;color:#2E1065;margin-top:7px}
-  .rowmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 2px 12px;font-size:13.5px}
-  .rowmeta .left{font-weight:600;color:#44445E}
-  .rowmeta .right{color:#C026D3;font-weight:600}
-  .rangebtns{display:inline-flex;gap:6px;margin-left:10px;vertical-align:middle}
-  .rangebtns button{border:1.5px solid #D9D9EC;background:#fff;color:#5B21B6;font-weight:700;font-size:12.5px;padding:5px 13px;border-radius:999px;cursor:pointer}
-  .rangebtns button.on{background:#5B21B6;color:#fff;border-color:#5B21B6}
+  .wrap{max-width:1024px;margin:0 auto;padding:18px 20px 34px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 22px rgba(34,34,34,.06);padding:22px;margin-bottom:16px}
+  .panel h3{font-size:16.5px;color:var(--text);margin-bottom:10px}
+  .loading{text-align:center;color:var(--muted);font-size:14px;padding:34px 0}
+
+  /* ---------- HERO / KPI ---------- */
+  .hero-panel{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 6px 22px rgba(34,34,34,.06);padding:24px 22px;margin-bottom:16px;border-top:4px solid var(--primary)}
+  .hero-label{font-size:12px;letter-spacing:2.5px;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .hero-num{font-size:46px;font-weight:800;line-height:1.1;margin-top:5px;color:var(--text)}
+  .hero-num .cur{color:var(--primary)}
+  .hero-sub{font-size:14px;color:var(--muted);margin-top:3px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .kcard{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 6px 22px rgba(34,34,34,.05);padding:18px 20px}
+  .kcard .k{font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:700;text-transform:uppercase}
+  .kcard .v{font-size:26px;font-weight:800;color:var(--text);margin-top:6px}
+  .rowmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 2px 14px;font-size:13.5px}
+  .rowmeta .left{font-weight:600;color:var(--text)}
+  .rowmeta .right{color:var(--primary);font-weight:700}
+  .rangebtns{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle;flex-wrap:wrap}
+  .rangebtns button{border:1.5px solid var(--border);background:var(--card);color:var(--text);font-weight:700;font-size:12.5px;padding:5px 13px;border-radius:999px;cursor:pointer}
+  .rangebtns button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
   .grid2{display:grid;grid-template-columns:1fr 1.55fr;gap:16px}
-  .panel{background:#fff;border-radius:20px;box-shadow:0 12px 32px rgba(41,16,105,.10);padding:22px}
-  .panel h3{font-size:16.5px;color:#2E1065;margin-bottom:8px}
+  .grid2 .panel{margin-bottom:0}
   .donut-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:8px}
   .donut{width:172px;height:172px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-  .donut-in{width:118px;height:118px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .donut-in b{font-size:27px;color:#2E1065}
-  .donut-in span{font-size:10.5px;letter-spacing:1.6px;color:#8A8AA3;font-weight:700}
-  .legend{display:flex;flex-wrap:wrap;gap:7px 14px;justify-content:center;font-size:12.5px;color:#44445E}
+  .donut-in{width:118px;height:118px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .donut-in b{font-size:27px;color:var(--text)}
+  .donut-in span{font-size:10.5px;letter-spacing:1.6px;color:var(--muted);font-weight:700}
+  .legend{display:flex;flex-wrap:wrap;gap:7px 14px;justify-content:center;font-size:12.5px;color:var(--muted)}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
-  .bar-row{display:grid;grid-template-columns:74px 1fr 92px;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed #ECECF6}
+  .bar-row{display:grid;grid-template-columns:74px 1fr 92px;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--border)}
   .bar-row:last-child{border-bottom:none}
-  .bar-row .m{font-weight:700;font-size:13.5px;color:#44445E}
-  .bar-track{height:17px;background:#EFEFFA;border-radius:999px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#7C3AED,#D946EF,#EC4899);min-width:4px;transition:width .6s ease}
+  .bar-row .m{font-weight:700;font-size:13.5px;color:var(--muted)}
+  .bar-track{height:17px;background:var(--bg-soft);border-radius:999px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--accent));min-width:4px;transition:width .6s ease}
   .bar-row .amt{text-align:right}
-  .bar-row .amt b{display:block;font-size:14px;color:#191938}
-  .bar-row .amt span{font-size:11.5px;color:#8A8AA3}
-  .renew-table{width:100%;border-collapse:collapse;font-size:14px}
-  .renew-table th{text-align:left;font-size:11px;letter-spacing:1.8px;color:#8A8AA3;font-weight:700;padding:10px 8px;border-bottom:1.5px solid #ECECF6;text-transform:uppercase}
-  .renew-table td{padding:11px 8px;border-bottom:1px solid #F2F2FA;color:#44445E;vertical-align:middle}
-  .renew-table tr:last-child td{border-bottom:none}
-  .renew-table td.cust{font-weight:700;color:#191938;word-break:break-all}
-  .days{display:inline-block;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700}
-  .d-red{background:#FDE8E8;color:#C81E1E}.d-org{background:#FEF3C7;color:#B45309}.d-grn{background:#DEF7EC;color:#057A55}
-  .wa-btn{display:inline-block;background:#16A34A;color:#fff;font-weight:700;font-size:12.5px;padding:7px 15px;border-radius:999px;white-space:nowrap}
-  .wa-btn:hover{background:#15803D}
-  .foot{margin-top:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#8A8AA3}
-  .foot button{background:none;border:none;color:#5B21B6;font-weight:700;cursor:pointer;font-size:12.5px}
+  .bar-row .amt b{display:block;font-size:14px;color:var(--text)}
+  .bar-row .amt span{font-size:11.5px;color:var(--muted)}
+
+  /* ---------- TABLES ---------- */
+  .tblwrap{overflow-x:auto}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+  table.tbl th{text-align:left;font-size:11px;letter-spacing:1.4px;color:var(--muted);font-weight:700;padding:10px 8px;border-bottom:1.5px solid var(--border);text-transform:uppercase;white-space:nowrap}
+  table.tbl td{padding:10px 8px;border-bottom:1px solid var(--bg-soft);color:var(--muted);vertical-align:middle}
+  table.tbl tr:last-child td{border-bottom:none}
+  table.tbl td.cust{font-weight:700;color:var(--text);word-break:break-all;min-width:150px}
+  .days{display:inline-block;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  .d-red{background:#FEE2E2;color:#B91C1C}.d-org{background:#FFEDD5;color:#C2410C}.d-grn{background:#DCFCE7;color:#15803D}
+  .pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+  .p-green{background:#DCFCE7;color:#15803D}.p-red{background:#FEE2E2;color:#B91C1C}
+  .p-orange{background:#FFEDD5;color:#C2410C}.p-yellow{background:#FEF9C3;color:#A16207}.p-gray{background:var(--bg-soft);color:var(--muted)}
+  .wa-btn{display:inline-block;background:var(--cta);color:#fff;font-weight:700;font-size:12.5px;padding:7px 15px;border-radius:999px;white-space:nowrap;border:none;cursor:pointer}
+  .wa-btn:hover{background:#0F6A31}
+  .del-btn{background:#fff;color:#DC2626;border:1.5px solid #DC2626;font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .del-btn:hover{background:#FEF2F2}
+  .del-btn:disabled{opacity:.5;cursor:wait}
+  .status-sel{padding:6px 8px;border:1.5px solid var(--border);border-radius:9px;font-size:12.5px;background:#fff;color:var(--text);max-width:150px}
+  td.acts{white-space:nowrap}
+  td.acts > *{margin-right:6px;vertical-align:middle}
+  td.acts > *:last-child{margin-right:0}
+
+  /* ---------- FILTERS ---------- */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .filters input[type=text]{flex:1;min-width:210px;padding:11px 14px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;outline:none;background:#fff;color:var(--text)}
+  .filters input[type=text]:focus{border-color:var(--primary)}
+  .filters select{padding:11px 10px;border:1.5px solid var(--border);border-radius:11px;font-size:13.5px;background:#fff;color:var(--text)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--border);background:#fff;color:var(--text);font-weight:700;font-size:12.5px;padding:7px 14px;border-radius:999px;cursor:pointer}
+  .chip.on{background:var(--text);color:#fff;border-color:var(--text)}
+  .countline{font-size:13px;color:var(--muted);font-weight:600;margin:2px 0 8px}
+
+  /* ---------- FORM ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+  .fg label{font-size:12px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:6px}
+  .fg input,.fg select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14.5px;outline:none;background:#fff;color:var(--text)}
+  .fg input:focus,.fg select:focus{border-color:var(--primary)}
+  .fg.full{grid-column:1/-1}
+  .btn-primary{width:100%;margin-top:18px;background:var(--primary);color:#fff;border:none;font-weight:800;font-size:15.5px;padding:13px;border-radius:12px;cursor:pointer}
+  .btn-primary:hover{background:var(--accent)}
+  .btn-primary:disabled{opacity:.6;cursor:wait}
+  .form-msg{font-size:13.5px;font-weight:600;margin-top:12px;min-height:18px}
+  .form-msg.ok{color:var(--cta)}
+  .form-msg.err{color:#C81E1E}
+
+  .foot{margin-top:4px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .foot button{background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-size:12.5px}
 
   /* ---------- LOCK SCREEN ---------- */
-  .lock{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(115deg,#5B21B6,#7C3AED 50%,#C026D3);padding:20px}
-  .lock-box{background:#fff;border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.28);max-width:420px;width:100%;padding:34px 30px}
-  .lock-box .logo2{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#7C3AED,#C026D3);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:16px}
-  .lock-box h2{font-size:21px;color:#2E1065}
-  .lock-box p{font-size:13.5px;color:#6B6B87;margin:7px 0 18px;line-height:1.55}
-  .lock-box label{font-size:12px;font-weight:700;letter-spacing:1.2px;color:#8A8AA3;text-transform:uppercase;display:block;margin:13px 0 6px}
-  .lock-box input{width:100%;padding:12px 14px;border:1.5px solid #D9D9EC;border-radius:12px;font-size:14.5px;outline:none}
-  .lock-box input:focus{border-color:#7C3AED}
-  .lock-box button{width:100%;margin-top:20px;background:linear-gradient(90deg,#7C3AED,#C026D3);color:#fff;border:none;font-weight:800;font-size:15.5px;padding:13px;border-radius:12px;cursor:pointer}
+  .lock{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-soft);padding:20px}
+  .lock-box{background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:0 20px 50px rgba(34,34,34,.12);max-width:420px;width:100%;padding:34px 30px}
+  .lock-box .logo2{width:56px;height:56px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:16px}
+  .lock-box h2{font-size:21px;color:var(--text)}
+  .lock-box p{font-size:13.5px;color:var(--muted);margin:7px 0 18px;line-height:1.55}
+  .lock-box label{font-size:12px;font-weight:700;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;display:block;margin:13px 0 6px}
+  .lock-box input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14.5px;outline:none;color:var(--text)}
+  .lock-box input:focus{border-color:var(--primary)}
+  .lock-box button{width:100%;margin-top:20px;background:var(--primary);color:#fff;border:none;font-weight:800;font-size:15.5px;padding:13px;border-radius:12px;cursor:pointer}
+  .lock-box button:hover{background:var(--accent)}
+  .lock-box button:disabled{opacity:.6}
   .lock-box .err{color:#C81E1E;font-size:13px;font-weight:600;margin-top:11px;min-height:17px}
-  .lock-box .note{font-size:12px;color:#8A8AA3;margin-top:14px;line-height:1.55}
-  .loading{text-align:center;color:#6B6B87;font-size:14px;padding:38px 0}
+  .lock-box .note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.55}
 
-  @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.hero-num{font-size:40px}}
-  @media(max-width:520px){.cards{grid-template-columns:1fr 1fr}.hero{padding:22px 18px 86px}.wrap{padding:0 13px 26px}.bar-row{grid-template-columns:60px 1fr 76px}.renew-table th:nth-child(4),.renew-table td:nth-child(4){display:none}}
+  @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.grid2 .panel{margin-bottom:16px}.hero-num{font-size:38px}}
+  @media(max-width:560px){.form-grid{grid-template-columns:1fr}.wrap{padding:14px 13px 26px}.tabs{padding:12px 13px 0}.topbar-in{padding:10px 13px}.bar-row{grid-template-columns:60px 1fr 76px}.updated{display:none}}
 </style>
 </head>
 <body>
@@ -93,7 +142,7 @@
 <div id="lockScreen" class="lock">
   <div class="lock-box">
     <div class="logo2">SR</div>
-    <h2>SR Digital World — Hub</h2>
+    <h2>SR Digital World — Dashboard</h2>
     <p>Ye dashboard sirf aap ke liye hai. Apna password dein — pehli baar Apps Script wali link bhi lagani hogi, wo isi phone/browser mein mehfooz reh jayegi.</p>
     <form id="lockForm">
       <label for="apiUrl">Apps Script Link (sirf pehli baar)</label>
@@ -103,77 +152,210 @@
       <button type="submit" id="unlockBtn">Dashboard Kholein</button>
       <div class="err" id="lockErr"></div>
     </form>
-    <div class="note">Data seedha aap ki private CRM Sheet se aata hai. Password ghalat ho ya link na lagi ho to data nahi milega.</div>
+    <div class="note">Data seedha aap ki private CRM Sheet se aata hai — ab customers dekhna, naya order lagana aur status badalna bhi yahin se ho jayega. Password ghalat ho ya link na lagi ho to data nahi milega.</div>
   </div>
 </div>
 
-<!-- ============ DASHBOARD ============ -->
+<!-- ============ APP ============ -->
 <div id="app" class="hidden">
-  <header class="hero">
-    <div class="hero-top">
+  <header class="topbar">
+    <div class="topbar-in">
       <div class="brand">
         <div class="logo">SR</div>
-        <div><h1>SR DIGITAL WORLD</h1><small>SUBSCRIPTION HUB</small></div>
+        <div><div class="bname">SR Digital World</div><div class="bsub">Business Dashboard</div></div>
       </div>
-      <nav class="nav">
-        <a href="#" class="active">Dashboard</a>
-        <a id="navCustomers" target="_blank" rel="noopener">Customers</a>
-        <a id="navEntry" target="_blank" rel="noopener">Entry</a>
-        <a id="navAccounts" target="_blank" rel="noopener">Accounts</a>
-        <a id="navAds" target="_blank" rel="noopener">Ads</a>
-      </nav>
+      <div class="top-right">
+        <span class="updated" id="genAt"></span>
+        <button class="iconbtn" id="refreshBtn" title="Data refresh karein">🔄 Refresh</button>
+      </div>
     </div>
-    <div class="hero-label" id="heroLabel">Net Profit — This Month</div>
-    <div class="hero-num" id="heroProfit">Rs 0</div>
-    <div class="hero-sub" id="heroSub">—</div>
   </header>
 
+  <nav class="tabs">
+    <button class="vtab on" data-view="dashboard">📊 Dashboard</button>
+    <button class="vtab" data-view="customers">👥 Customers</button>
+    <button class="vtab" data-view="order">➕ Naya Order</button>
+    <button class="vtab" data-view="renewals">⏰ Renewals</button>
+  </nav>
+
   <main class="wrap">
-    <section class="cards">
-      <div class="card"><div class="k">Active Plans</div><div class="v" id="kActive">—</div></div>
-      <div class="card"><div class="k">Total Revenue</div><div class="v" id="kRevenue">—</div></div>
-      <div class="card"><div class="k">Net Profit</div><div class="v" id="kProfit">—</div></div>
-      <div class="card"><div class="k">Customers</div><div class="v" id="kCustomers">—</div></div>
+
+    <!-- ======== VIEW: DASHBOARD ======== -->
+    <section id="view-dashboard" class="view">
+      <div class="hero-panel">
+        <div class="hero-label" id="heroLabel">Net Profit — This Month</div>
+        <div class="hero-num" id="heroProfit">Rs 0</div>
+        <div class="hero-sub" id="heroSub">—</div>
+      </div>
+
+      <section class="cards">
+        <div class="kcard"><div class="k">Active Plans</div><div class="v" id="kActive">—</div></div>
+        <div class="kcard"><div class="k">Total Revenue</div><div class="v" id="kRevenue">—</div></div>
+        <div class="kcard"><div class="k">Net Profit</div><div class="v" id="kProfit">—</div></div>
+        <div class="kcard"><div class="k">Customers</div><div class="v" id="kCustomers">—</div></div>
+      </section>
+
+      <div class="rowmeta">
+        <div class="left">📅 Date Range:
+          <span class="rangebtns">
+            <button data-range="this" class="on">This Month</button>
+            <button data-range="last">Last Month</button>
+            <button data-range="all">All Time</button>
+          </span>
+        </div>
+        <div class="right">🎯 Target ki taraf — profit barh raha hai</div>
+      </div>
+
+      <section class="grid2">
+        <div class="panel">
+          <h3>Orders by Tool</h3>
+          <div class="donut-wrap">
+            <div class="donut" id="donut"><div class="donut-in"><b id="donutNum">0</b><span>ORDERS</span></div></div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Monthly Profit — Progress Bars</h3>
+          <div id="bars"></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:16px">
+        <h3>Renewal Alerts</h3>
+        <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>Customer</th><th>Tool</th><th>Expiry</th><th>Days</th><th></th></tr></thead>
+          <tbody id="renewBody"></tbody>
+        </table>
+        </div>
+      </section>
     </section>
 
-    <div class="rowmeta">
-      <div class="left">📅 Date Range:
-        <span class="rangebtns">
-          <button data-range="this" class="on">This Month</button>
-          <button data-range="last">Last Month</button>
-          <button data-range="all">All Time</button>
-        </span>
-      </div>
-      <div class="right">🎯 Target ki taraf — profit barh raha hai</div>
-    </div>
-
-    <section class="grid2">
+    <!-- ======== VIEW: CUSTOMERS ======== -->
+    <section id="view-customers" class="view hidden">
       <div class="panel">
-        <h3>Orders by Tool</h3>
-        <div class="donut-wrap">
-          <div class="donut" id="donut"><div class="donut-in"><b id="donutNum">0</b><span>ORDERS</span></div></div>
-          <div class="legend" id="donutLegend"></div>
+        <h3>👥 Customers</h3>
+        <div class="filters">
+          <input type="text" id="custSearch" placeholder="Gmail, phone, tool ya plan search karein…">
+          <div class="chips" id="custChips">
+            <button class="chip on" data-tool="All">All</button>
+            <button class="chip" data-tool="Canva">Canva</button>
+            <button class="chip" data-tool="CapCut">CapCut</button>
+            <button class="chip" data-tool="Gemini">Gemini</button>
+            <button class="chip" data-tool="Other">Other</button>
+          </div>
+          <select id="custStatus">
+            <option value="All">Sab Status</option>
+            <option value="🟢 Active">🟢 Active</option>
+            <option value="🔴 Expired">🔴 Expired</option>
+            <option value="🔴 Expiring Soon">🔴 Expiring Soon</option>
+            <option value="🟡 Renewal Due">🟡 Renewal Due</option>
+          </select>
+        </div>
+        <div class="countline" id="custCount"></div>
+        <div class="loading hidden" id="custLoading">Loading...</div>
+        <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>Tool</th><th>Gmail</th><th>Phone</th><th>Plan</th><th>Purchase</th><th>Expiry</th><th>Days</th><th>Selling</th><th>Profit</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="custBody"></tbody>
+        </table>
         </div>
       </div>
+    </section>
+
+    <!-- ======== VIEW: NAYA ORDER ======== -->
+    <section id="view-order" class="view hidden">
       <div class="panel">
-        <h3>Monthly Profit — Progress Bars</h3>
-        <div id="bars"></div>
+        <h3>➕ Naya Order</h3>
+        <form id="orderForm">
+          <div class="form-grid">
+            <div class="fg">
+              <label for="fTool">Tool</label>
+              <select id="fTool">
+                <option value="Canva">Canva</option>
+                <option value="CapCut">CapCut</option>
+                <option value="Gemini">Gemini</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="fg hidden" id="fToolNameWrap">
+              <label for="fToolName">Tool Name (Other ke liye)</label>
+              <input type="text" id="fToolName" placeholder="Masalan: Netflix, Spotify…">
+            </div>
+            <div class="fg">
+              <label for="fGmail">Customer Gmail *</label>
+              <input type="text" id="fGmail" placeholder="customer@gmail.com" autocomplete="off">
+            </div>
+            <div class="fg">
+              <label for="fPhone">Phone / WhatsApp *</label>
+              <input type="text" id="fPhone" placeholder="03xx xxxxxxx" autocomplete="off">
+            </div>
+            <div class="fg">
+              <label for="fPlan">Plan Duration *</label>
+              <input type="text" id="fPlan" list="planList" placeholder="Masalan: 1 Month" autocomplete="off">
+              <datalist id="planList">
+                <option value="1 Month"></option>
+                <option value="2 Months"></option>
+                <option value="3 Months"></option>
+                <option value="4 Months"></option>
+                <option value="6 Months"></option>
+                <option value="1 Year"></option>
+                <option value="18 Months"></option>
+                <option value="7 Days"></option>
+              </datalist>
+            </div>
+            <div class="fg">
+              <label for="fDate">Purchase Date</label>
+              <input type="date" id="fDate">
+            </div>
+            <div class="fg">
+              <label for="fCost">Cost Price (Rs)</label>
+              <input type="number" id="fCost" min="0" step="any" placeholder="0">
+            </div>
+            <div class="fg">
+              <label for="fSelling">Selling Price (Rs) *</label>
+              <input type="number" id="fSelling" min="0" step="any" placeholder="0">
+            </div>
+            <div class="fg">
+              <label for="fLead">Lead Source</label>
+              <input type="text" id="fLead" placeholder="Facebook, WhatsApp… (optional)" autocomplete="off">
+            </div>
+            <div class="fg">
+              <label for="fStatus">Status</label>
+              <select id="fStatus">
+                <option value="🟢 Active">🟢 Active</option>
+                <option value="🔴 Expired">🔴 Expired</option>
+                <option value="🔴 Expiring Soon">🔴 Expiring Soon</option>
+                <option value="🟡 Renewal Due">🟡 Renewal Due</option>
+              </select>
+            </div>
+            <div class="fg full">
+              <label for="fNotes">Notes</label>
+              <input type="text" id="fNotes" placeholder="Koi khaas note (optional)" autocomplete="off">
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" id="orderBtn">✅ Order Save Karein</button>
+          <div class="form-msg" id="orderMsg"></div>
+        </form>
       </div>
     </section>
 
-    <section class="panel" style="margin-top:16px">
-      <h3>Renewal Alerts</h3>
-      <div style="overflow-x:auto">
-      <table class="renew-table">
-        <thead><tr><th>Customer</th><th>Tool</th><th>Expiry</th><th>Days</th><th></th></tr></thead>
-        <tbody id="renewBody"></tbody>
-      </table>
+    <!-- ======== VIEW: RENEWALS ======== -->
+    <section id="view-renewals" class="view hidden">
+      <div class="panel">
+        <h3>⏰ Renewals</h3>
+        <div class="tblwrap">
+        <table class="tbl">
+          <thead><tr><th>Customer</th><th>Tool</th><th>Plan</th><th>Expiry</th><th>Days</th><th></th></tr></thead>
+          <tbody id="renewFullBody"></tbody>
+        </table>
+        </div>
       </div>
     </section>
 
     <div class="foot">
-      <span id="genAt"></span>
-      <span><button id="refreshBtn">↻ Refresh</button> &nbsp;·&nbsp; <button id="resetBtn">Link / Password tabdeel karein</button></span>
+      <span>Source: SR Digital World CRM (Final) — Sheet private rehti hai, data yahin manage hota hai.</span>
+      <span><button id="resetBtn">Link / Password tabdeel karein</button></span>
     </div>
   </main>
 </div>
@@ -181,25 +363,61 @@
 <script>
 (function(){
   "use strict";
-  var SHEET_ID = "1Wv0eaUl2BsTYJCgXQztGpnT3vc0_GsLaMXWWaVf1twU";
-  var SHEET = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/edit";
-  var GID = { renewals: 537921484, canva: 1480327255, other: 442788664, ads: 892212195 };
-  document.getElementById("navCustomers").href = SHEET + "#gid=" + GID.renewals;
-  document.getElementById("navEntry").href = SHEET + "#gid=" + GID.canva;
-  document.getElementById("navAccounts").href = SHEET + "#gid=" + GID.other;
-  document.getElementById("navAds").href = SHEET + "#gid=" + GID.ads;
-
   var LS_URL = "sr_hub_url", LS_PASS = "sr_hub_pass";
-  var DATA = null, RANGE = "this";
-  var TOOL_COLORS = ["#7C3AED","#16A34A","#0EA5E9","#F59E0B","#EC4899","#64748B","#DC2626","#14B8A6"];
+  var DATA = null, RANGE = "this", VIEW = "dashboard";
+  var CUSTOMERS = null, CUST_STALE = true, CUST_TOOL = "All";
+  var TOOL_COLORS = ["#FA920B","#15803D","#2563EB","#64748B","#FF8200","#0EA5E9","#94A3B8","#334155"];
   var MONTHS_PK = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var STATUSES = ["🟢 Active","🔴 Expired","🔴 Expiring Soon","🟡 Renewal Due"];
+  var SHEET_MAP = { Canva: "Canva_Data", CapCut: "CapCut_Data", Gemini: "Gemini_Data", Other: "Other_Tools_Data" };
 
-  function fmt(n){ return "Rs " + Math.round(n).toLocaleString("en-US"); }
+  function $(id){ return document.getElementById(id); }
+  function fmt(n){ return "Rs " + Math.round(Number(n) || 0).toLocaleString("en-US"); }
   function monthLabel(key){ var p = key.split("-"); return MONTHS_PK[parseInt(p[1],10)-1] + " " + p[0]; }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function todayISO(){
+    var n = new Date(Date.now() + 5*60*60*1000); // Asia/Karachi
+    return n.getUTCFullYear() + "-" + String(n.getUTCMonth()+1).padStart(2,"0") + "-" + String(n.getUTCDate()).padStart(2,"0");
+  }
 
+  /* ---------- API ---------- */
+  function fetchData(url, pass, done){
+    var full = url + (url.indexOf("?") === -1 ? "?" : "&") + "p=" + encodeURIComponent(pass);
+    fetch(full).then(function(res){ return res.json(); }).then(function(json){
+      if(!json || !json.ok){ done(new Error("wrong")); return; }
+      DATA = json; done(null);
+    }).catch(function(e){ done(e); });
+  }
+  function apiPost(action, extra){
+    var url = localStorage.getItem(LS_URL) || "", pass = localStorage.getItem(LS_PASS) || "";
+    var body = { p: pass, action: action };
+    if(extra) Object.keys(extra).forEach(function(k){ body[k] = extra[k]; });
+    return fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) })
+      .then(function(res){ return res.json(); });
+  }
+  function authFailed(json){ return json && json.error === "wrong_password"; }
+  function backToLock(msg){
+    $("app").classList.add("hidden");
+    $("lockScreen").classList.remove("hidden");
+    if(msg) $("lockErr").textContent = msg;
+  }
+
+  /* ---------- VIEWS ---------- */
+  function showView(name){
+    VIEW = name;
+    document.querySelectorAll(".vtab").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-view") === name); });
+    ["dashboard","customers","order","renewals"].forEach(function(v){
+      $("view-" + v).classList.toggle("hidden", v !== name);
+    });
+    if(name === "customers") loadCustomers(false);
+    if(name === "renewals") renderRenewalsFull();
+  }
+  document.querySelectorAll(".vtab").forEach(function(b){
+    b.addEventListener("click", function(){ showView(b.getAttribute("data-view")); });
+  });
+
+  /* ---------- DASHBOARD ---------- */
   function currentKey(){
-    // Asia/Karachi ke hisaab se current month (UTC+5)
     var now = new Date(Date.now() + 5*60*60*1000);
     return now.getUTCFullYear() + "-" + String(now.getUTCMonth()+1).padStart(2,"0");
   }
@@ -208,7 +426,6 @@
     while(m < 1){ m += 12; y--; } while(m > 12){ m -= 12; y++; }
     return y + "-" + String(m).padStart(2,"0");
   }
-
   function aggregate(){
     if(!DATA) return null;
     var keys = [];
@@ -222,7 +439,6 @@
       found[m.month] = 1;
       t.sales += m.sales; t.revenue += m.revenue; t.cost += m.cost;
       t.adSpend += m.adSpend; t.netProfit += m.netProfit;
-      // customers: month-wise unique thay, All Time par takreeban jama (repeat buyers dohra ginay ja sakte hain)
       t.customers += m.customers;
       Object.keys(m.byTool).forEach(function(tool){
         if(!t.byTool[tool]) t.byTool[tool] = { sales:0, revenue:0 };
@@ -234,93 +450,260 @@
     t.hasData = Object.keys(found).length > 0;
     return t;
   }
-
+  function renewRowHtml(r, withPlan){
+    var cls = r.days <= 3 ? "d-red" : (r.days <= 7 ? "d-org" : "d-grn");
+    var dlabel = r.days <= 0 ? "Aaj / guzar gaya" : r.days + (r.days === 1 ? " day" : " days");
+    var waText = encodeURIComponent("Salam! SR Digital World se — aap ka " + r.tool + " plan " + r.expiry + " ko expire ho raha hai. Renew karwana hai to bata dein, hum foran kar dein ge. Shukriya!");
+    var wa = r.phone ? "https://wa.me/" + r.phone + "?text=" + waText : "#";
+    var cust = r.customer || "";
+    var h = "<tr><td class='cust'>" + esc(cust.length > 30 ? cust.slice(0,30) + "…" : cust) + "</td>" +
+      "<td>" + esc(r.tool) + "</td>";
+    if(withPlan) h += "<td>" + esc(r.plan) + "</td>";
+    h += "<td>" + esc(r.expiry) + "</td>" +
+      "<td><span class='days " + cls + "'>" + esc(dlabel) + "</span></td>" +
+      "<td style='text-align:right'><a class='wa-btn' target='_blank' rel='noopener' href='" + wa + "'>WA Reminder</a></td></tr>";
+    return h;
+  }
   function render(){
     var t = aggregate(); if(!t) return;
-    document.getElementById("heroLabel").textContent = "Net Profit — " + t.label;
-    document.getElementById("heroProfit").textContent = fmt(t.netProfit);
-    document.getElementById("heroSub").textContent = "Revenue " + fmt(t.revenue) + " · " + t.sales + " orders · " + t.customers + " customers";
-    document.getElementById("kActive").textContent = DATA.activePlans;
-    document.getElementById("kRevenue").textContent = fmt(t.revenue);
-    document.getElementById("kProfit").textContent = fmt(t.netProfit);
-    document.getElementById("kCustomers").textContent = t.customers;
+    $("heroLabel").textContent = "Net Profit — " + t.label;
+    $("heroProfit").textContent = fmt(t.netProfit);
+    $("heroSub").textContent = "Revenue " + fmt(t.revenue) + " · " + t.sales + " orders · " + t.customers + " customers";
+    $("kActive").textContent = DATA.activePlans;
+    $("kRevenue").textContent = fmt(t.revenue);
+    $("kProfit").textContent = fmt(t.netProfit);
+    $("kCustomers").textContent = t.customers;
 
-    // Donut
     var tools = Object.keys(t.byTool).map(function(k){ return { name:k, sales:t.byTool[k].sales }; })
       .filter(function(x){ return x.sales > 0; }).sort(function(a,b){ return b.sales - a.sales; });
     var total = tools.reduce(function(s,x){ return s + x.sales; }, 0);
-    document.getElementById("donutNum").textContent = total;
+    $("donutNum").textContent = total;
     var acc = 0, parts = [];
     tools.forEach(function(x, i){
       var a0 = total ? (acc/total)*360 : 0; acc += x.sales; var a1 = total ? (acc/total)*360 : 0;
       parts.push(TOOL_COLORS[i % TOOL_COLORS.length] + " " + a0 + "deg " + a1 + "deg");
     });
-    document.getElementById("donut").style.background = parts.length ? "conic-gradient(" + parts.join(",") + ")" : "#EFEFFA";
-    document.getElementById("donutLegend").innerHTML = tools.map(function(x,i){
+    $("donut").style.background = parts.length ? "conic-gradient(" + parts.join(",") + ")" : "#EEF0F6";
+    $("donutLegend").innerHTML = tools.map(function(x,i){
       return "<span><i style='background:" + TOOL_COLORS[i % TOOL_COLORS.length] + "'></i>" + esc(x.name) + " · " + x.sales + "</span>";
     }).join("") || "<span>Koi order nahi</span>";
 
-    // Progress bars — tamam months, naye se purana, max profit ke hisaab se
     var months = DATA.months.slice().reverse();
     var maxP = Math.max.apply(null, months.map(function(m){ return m.netProfit; }).concat([1]));
-    document.getElementById("bars").innerHTML = months.map(function(m){
+    $("bars").innerHTML = months.map(function(m){
       var w = Math.max(3, Math.round(m.netProfit / maxP * 100));
       return "<div class='bar-row'><div class='m'>" + esc(monthLabel(m.month)) + "</div>" +
         "<div class='bar-track'><div class='bar-fill' style='width:" + w + "%'></div></div>" +
         "<div class='amt'><b>" + fmt(m.netProfit) + "</b><span>" + m.sales + " orders</span></div></div>";
     }).join("") || "<div class='loading'>Data nahi mila</div>";
 
-    // Renewals
-    document.getElementById("renewBody").innerHTML = (DATA.renewals || []).map(function(r){
-      var cls = r.days <= 0 ? "d-red" : (r.days <= 3 ? "d-red" : (r.days <= 7 ? "d-org" : "d-grn"));
-      var dlabel = r.days <= 0 ? "Aaj / guzar gaya" : r.days + (r.days === 1 ? " day" : " days");
-      var waText = encodeURIComponent("Salam! SR Digital World se — aap ka " + r.tool + " plan " + r.expiry + " ko expire ho raha hai. Renew karwana hai to bata dein, hum foran kar dein ge. Shukriya!");
-      var wa = r.phone ? "https://wa.me/" + r.phone + "?text=" + waText : "#";
-      var cust = r.customer || "";
-      return "<tr><td class='cust'>" + esc(cust.length > 26 ? cust.slice(0,26) + "…" : cust) + "</td>" +
-        "<td>" + esc(r.tool) + "</td><td>" + esc(r.expiry) + "</td>" +
-        "<td><span class='days " + cls + "'>" + esc(dlabel) + "</span></td>" +
-        "<td style='text-align:right'><a class='wa-btn' target='_blank' rel='noopener' href='" + wa + "'>WA Reminder</a></td></tr>";
-    }).join("") || "<tr><td colspan='5'>Koi renewal due nahi</td></tr>";
+    $("renewBody").innerHTML = (DATA.renewals || []).slice(0, 8).map(function(r){ return renewRowHtml(r, false); }).join("")
+      || "<tr><td colspan='5'>Koi renewal due nahi</td></tr>";
+    renderRenewalsFull();
 
-    document.getElementById("genAt").textContent = "Last updated: " + (DATA.generatedAt || "—") + " · Source: SR Digital World CRM (Final)";
-    document.getElementById("app").classList.remove("hidden");
-    document.getElementById("lockScreen").classList.add("hidden");
+    $("genAt").textContent = "Last update: " + (DATA.generatedAt || "—");
+    $("app").classList.remove("hidden");
+    $("lockScreen").classList.add("hidden");
+  }
+  function renderRenewalsFull(){
+    var el = $("renewFullBody"); if(!el || !DATA) return;
+    el.innerHTML = (DATA.renewals || []).map(function(r){ return renewRowHtml(r, true); }).join("")
+      || "<tr><td colspan='6'>Koi renewal due nahi</td></tr>";
   }
 
-  function fetchData(url, pass, done){
-    var full = url + (url.indexOf("?") === -1 ? "?" : "&") + "p=" + encodeURIComponent(pass);
-    fetch(full).then(function(res){ return res.json(); }).then(function(json){
-      if(!json || !json.ok){ done(new Error("wrong")); return; }
-      DATA = json; done(null);
-    }).catch(function(e){ done(e); });
+  /* ---------- CUSTOMERS ---------- */
+  function pillClass(status){
+    var s = String(status || "");
+    if(s.indexOf("Active") !== -1) return "p-green";
+    if(s.indexOf("Expiring") !== -1) return "p-orange";
+    if(s.indexOf("Renewal Due") !== -1) return "p-yellow";
+    if(s.indexOf("Expired") !== -1) return "p-red";
+    return "p-gray";
   }
+  function loadCustomers(force){
+    if(CUSTOMERS && !CUST_STALE && !force){ renderCustomers(); return; }
+    $("custLoading").classList.remove("hidden");
+    $("custCount").textContent = "";
+    apiPost("customers").then(function(json){
+      $("custLoading").classList.add("hidden");
+      if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); return; }
+      if(!json || !json.ok){ $("custCount").textContent = "Customers load nahi ho sakay. Dobara try karein."; return; }
+      CUSTOMERS = json.customers || [];
+      CUST_STALE = false;
+      renderCustomers();
+    }).catch(function(){
+      $("custLoading").classList.add("hidden");
+      $("custCount").textContent = "Network error — internet check karke dobara try karein.";
+    });
+  }
+  function custMatches(c){
+    var q = $("custSearch").value.trim().toLowerCase();
+    if(CUST_TOOL !== "All"){
+      if(CUST_TOOL === "Other"){ if(c.sheet !== "Other_Tools_Data") return false; }
+      else if(c.tool !== CUST_TOOL) return false;
+    }
+    var st = $("custStatus").value;
+    if(st !== "All" && String(c.status || "").trim() !== st) return false;
+    if(q){
+      var hay = (c.gmail + " " + c.phone + " " + c.tool + " " + c.plan).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  }
+  function statusOptionsHtml(c){
+    var list = STATUSES.slice();
+    var cur = String(c.status || "").trim();
+    if(cur && list.indexOf(cur) === -1) list.unshift(cur);
+    var h = "";
+    if(!cur) h += "<option value='' selected>— Status —</option>";
+    list.forEach(function(s){ h += "<option value='" + esc(s) + "'" + (s === cur ? " selected" : "") + ">" + esc(s) + "</option>"; });
+    return h;
+  }
+  function renderCustomers(){
+    if(!CUSTOMERS) return;
+    var shown = 0, rows = "";
+    CUSTOMERS.forEach(function(c, i){
+      if(!custMatches(c)) return;
+      shown++;
+      var wa = c.phoneDigits ? "https://wa.me/" + esc(c.phoneDigits) : "";
+      rows += "<tr>" +
+        "<td><b style='color:var(--text)'>" + esc(c.tool) + "</b></td>" +
+        "<td class='cust'>" + esc(c.gmail) + "</td>" +
+        "<td>" + esc(c.phone) + "</td>" +
+        "<td>" + esc(c.plan) + "</td>" +
+        "<td>" + esc(c.purchase) + "</td>" +
+        "<td>" + esc(c.expiry) + "</td>" +
+        "<td>" + (c.days === "" || c.days == null ? "—" : esc(c.days)) + "</td>" +
+        "<td>" + fmt(c.selling) + "</td>" +
+        "<td>" + fmt(c.profit) + "</td>" +
+        "<td><span class='pill " + pillClass(c.status) + "'>" + esc(c.status || "—") + "</span></td>" +
+        "<td class='acts'>" +
+          (wa ? "<a class='wa-btn' target='_blank' rel='noopener' href='" + wa + "'>WhatsApp</a>" : "") +
+          "<select class='status-sel' data-i='" + i + "' title='Status badlein'>" + statusOptionsHtml(c) + "</select>" +
+          "<button class='del-btn' data-i='" + i + "'>Delete</button>" +
+        "</td></tr>";
+    });
+    $("custBody").innerHTML = rows || "<tr><td colspan='11'>Koi customer nahi mila</td></tr>";
+    $("custCount").textContent = shown + " customers mile";
+  }
+  $("custSearch").addEventListener("input", renderCustomers);
+  $("custStatus").addEventListener("change", renderCustomers);
+  document.querySelectorAll("#custChips .chip").forEach(function(ch){
+    ch.addEventListener("click", function(){
+      document.querySelectorAll("#custChips .chip").forEach(function(x){ x.classList.remove("on"); });
+      ch.classList.add("on"); CUST_TOOL = ch.getAttribute("data-tool"); renderCustomers();
+    });
+  });
+  $("custBody").addEventListener("click", function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest(".del-btn") : null;
+    if(!btn || !CUSTOMERS) return;
+    var c = CUSTOMERS[Number(btn.getAttribute("data-i"))];
+    if(!c) return;
+    if(!confirm("Pakka delete kar dein? Ye row Sheet se saaf ho jayegi.")) return;
+    btn.disabled = true; btn.textContent = "Ho raha hai…";
+    apiPost("delete", { sheet: c.sheet, row: c.row }).then(function(json){
+      if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); return; }
+      if(!json || !json.ok){ alert("Delete nahi ho saka: " + ((json && json.error) || "error")); btn.disabled = false; btn.textContent = "Delete"; return; }
+      CUSTOMERS = CUSTOMERS.filter(function(x){ return !(x.sheet === c.sheet && x.row === c.row); });
+      renderCustomers();
+    }).catch(function(){ alert("Network error — dobara try karein."); btn.disabled = false; btn.textContent = "Delete"; });
+  });
+  $("custBody").addEventListener("change", function(ev){
+    var sel = ev.target;
+    if(!sel || !sel.classList || !sel.classList.contains("status-sel") || !CUSTOMERS) return;
+    var c = CUSTOMERS[Number(sel.getAttribute("data-i"))];
+    if(!c) return;
+    var st = sel.value;
+    sel.disabled = true;
+    apiPost("setStatus", { sheet: c.sheet, row: c.row, status: st }).then(function(json){
+      sel.disabled = false;
+      if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); return; }
+      if(!json || !json.ok){ alert("Status change nahi ho saka: " + ((json && json.error) || "error")); renderCustomers(); return; }
+      c.status = st;
+      renderCustomers();
+    }).catch(function(){ sel.disabled = false; alert("Network error — dobara try karein."); renderCustomers(); });
+  });
 
-  // Lock form
+  /* ---------- NAYA ORDER ---------- */
+  function setDefaultDate(){ $("fDate").value = todayISO(); }
+  setDefaultDate();
+  $("fTool").addEventListener("change", function(){
+    $("fToolNameWrap").classList.toggle("hidden", $("fTool").value !== "Other");
+  });
+  $("orderForm").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var msg = $("orderMsg");
+    msg.className = "form-msg"; msg.textContent = "";
+    var toolSel = $("fTool").value;
+    var gmail = $("fGmail").value.trim();
+    var phone = $("fPhone").value.trim();
+    var plan = $("fPlan").value.trim();
+    var sellingRaw = $("fSelling").value;
+    if(!gmail || !phone || !plan || sellingRaw === ""){
+      msg.classList.add("err");
+      msg.textContent = "Gmail, Phone / WhatsApp, Plan aur Selling Price lazmi bharein.";
+      return;
+    }
+    var btn = $("orderBtn");
+    btn.disabled = true; btn.textContent = "Save ho raha hai…";
+    apiPost("add", {
+      sheet: SHEET_MAP[toolSel],
+      tool: toolSel === "Other" ? $("fToolName").value.trim() : toolSel,
+      gmail: gmail,
+      phone: phone,
+      plan: plan,
+      purchaseISO: $("fDate").value || todayISO(),
+      cost: Number($("fCost").value) || 0,
+      selling: Number(sellingRaw) || 0,
+      lead: $("fLead").value.trim(),
+      notes: $("fNotes").value.trim(),
+      status: $("fStatus").value
+    }).then(function(json){
+      btn.disabled = false; btn.textContent = "✅ Order Save Karein";
+      if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); return; }
+      if(!json || !json.ok){
+        msg.classList.add("err");
+        msg.textContent = "Order save nahi ho saka: " + ((json && json.error) || "error");
+        return;
+      }
+      msg.classList.add("ok");
+      msg.textContent = "✅ Order save ho gaya! Sheet ki row " + json.row + " par entry lag gayi hai.";
+      $("orderForm").reset();
+      setDefaultDate();
+      $("fToolNameWrap").classList.add("hidden");
+      CUST_STALE = true; // Customers list agli dafa fresh ayegi
+    }).catch(function(){
+      btn.disabled = false; btn.textContent = "✅ Order Save Karein";
+      msg.classList.add("err");
+      msg.textContent = "Network error — internet check karke dobara try karein.";
+    });
+  });
+
+  /* ---------- LOCK / SESSION ---------- */
   var savedUrl = localStorage.getItem(LS_URL) || "";
   var savedPass = localStorage.getItem(LS_PASS) || "";
-  if(savedUrl) document.getElementById("apiUrl").value = savedUrl;
-  if(savedPass) document.getElementById("apiPass").value = savedPass;
+  if(savedUrl) $("apiUrl").value = savedUrl;
+  if(savedPass) $("apiPass").value = savedPass;
 
-  document.getElementById("lockForm").addEventListener("submit", function(ev){
+  $("lockForm").addEventListener("submit", function(ev){
     ev.preventDefault();
-    var url = document.getElementById("apiUrl").value.trim();
-    var pass = document.getElementById("apiPass").value;
-    var err = document.getElementById("lockErr");
-    var btn = document.getElementById("unlockBtn");
+    var url = $("apiUrl").value.trim();
+    var pass = $("apiPass").value;
+    var err = $("lockErr");
+    var btn = $("unlockBtn");
     if(!url){ err.textContent = "Pehle Apps Script wali link lagayein."; return; }
     err.textContent = ""; btn.textContent = "Data aa raha hai…"; btn.disabled = true;
     fetchData(url, pass, function(e){
       btn.textContent = "Dashboard Kholein"; btn.disabled = false;
       if(e){ err.textContent = "Password ghalat hai ya link kaam nahi kar rahi. Dono check karke dobara koshish karein."; return; }
       localStorage.setItem(LS_URL, url); localStorage.setItem(LS_PASS, pass);
+      showView("dashboard");
       render();
     });
   });
 
-  // Auto-unlock agar pehle se saved hai
   if(savedUrl && savedPass){
-    fetchData(savedUrl, savedPass, function(e){ if(!e) render(); });
+    fetchData(savedUrl, savedPass, function(e){ if(!e){ showView("dashboard"); render(); } });
   }
 
   document.querySelectorAll(".rangebtns button").forEach(function(b){
@@ -329,14 +712,18 @@
       b.classList.add("on"); RANGE = b.getAttribute("data-range"); render();
     });
   });
-  document.getElementById("refreshBtn").addEventListener("click", function(){
+  $("refreshBtn").addEventListener("click", function(){
     var url = localStorage.getItem(LS_URL), pass = localStorage.getItem(LS_PASS);
-    if(url && pass) fetchData(url, pass, function(e){ if(!e) render(); });
+    if(!(url && pass)) return;
+    CUST_STALE = true;
+    fetchData(url, pass, function(e){
+      if(!e){ render(); if(VIEW === "customers") loadCustomers(true); }
+    });
   });
-  document.getElementById("resetBtn").addEventListener("click", function(){
+  $("resetBtn").addEventListener("click", function(){
     localStorage.removeItem(LS_URL); localStorage.removeItem(LS_PASS);
-    document.getElementById("app").classList.add("hidden");
-    document.getElementById("lockScreen").classList.remove("hidden");
+    $("app").classList.add("hidden");
+    $("lockScreen").classList.remove("hidden");
   });
 })();
 </script>
