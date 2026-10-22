@@ -138,6 +138,14 @@
   .g-down{background:#FEE2E2;color:#B91C1C}
   .adeff{margin:0 2px 14px;font-size:13.5px;color:var(--muted);background:var(--card);border:1px dashed var(--border);border-radius:12px;padding:11px 15px}
   .adeff b{color:var(--text)}
+  .tcsub{color:var(--muted);font-size:12px;font-weight:600;margin-top:2px}
+  .muted-note{color:var(--muted);font-size:12.5px;margin:-8px 2px 12px}
+  .customrange{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin:2px 0 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 15px}
+  .customrange label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block}
+  .customrange input{margin-top:4px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:13.5px;color:var(--text);outline:none;background:#fff}
+  .customrange input:focus{border-color:var(--primary)}
+  .customrange .crlabel{font-size:13px;font-weight:700;color:var(--text)}
+  .customrange .crerr{color:#C81E1E;font-size:12.5px;font-weight:600;width:100%}
   .mini-btn{background:#fff;border:1.5px solid var(--border);color:var(--text);font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
   .mini-btn:hover{border-color:var(--primary)}
   .mini-btn:disabled{opacity:.5;cursor:wait}
@@ -218,7 +226,6 @@
       <div class="hero-panel">
         <div class="hero-label" id="heroLabel">Net Profit — This Month</div>
         <div class="hero-num" id="heroProfit">Rs 0</div>
-        <span class="gchip hidden" id="heroGrowth"></span>
         <div class="hero-sub" id="heroSub">—</div>
       </div>
 
@@ -230,6 +237,8 @@
       </section>
 
       <div class="adeff" id="adEff"></div>
+      <div class="muted-note hidden" id="adEffNote"></div>
+      <div class="loading hidden" id="dashLoading">Data load ho raha hai…</div>
 
       <div class="rowmeta">
         <div class="left">📅 Date Range:
@@ -237,9 +246,18 @@
             <button data-range="this" class="on">This Month</button>
             <button data-range="last">Last Month</button>
             <button data-range="all">All Time</button>
+            <button data-range="custom">📅 Custom</button>
           </span>
         </div>
         <div class="right">🎯 Target ki taraf — profit barh raha hai</div>
+      </div>
+
+      <div class="customrange hidden" id="customRangeBar">
+        <div><label for="crFrom">From</label><input type="date" id="crFrom"></div>
+        <div><label for="crTo">To</label><input type="date" id="crTo"></div>
+        <button class="mini-btn btn-orange" id="crApply" type="button">Apply</button>
+        <span class="crlabel" id="crLabel"></span>
+        <span class="crerr" id="crErr"></span>
       </div>
 
       <section class="grid2">
@@ -511,6 +529,7 @@
   var LS_URL = "sr_hub_url", LS_PASS = "sr_hub_pass";
   var DATA = null, RANGE = "this", VIEW = "dashboard";
   var CUSTOMERS = null, CUST_STALE = true, CUST_TOOL = "All";
+  var CUSTOM = { from: "", to: "", agg: null, approx: false };
   var TOOL_COLORS = ["#FA920B","#15803D","#2563EB","#64748B","#FF8200","#0EA5E9","#94A3B8","#334155"];
   var MONTHS_PK = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var STATUSES = ["🟢 Active","🔴 Expired","🔴 Expiring Soon","🟡 Renewal Due"];
@@ -612,6 +631,7 @@
     return h;
   }
   function render(){
+    if(RANGE === "custom"){ renderRangeDashboard(); return; }
     var t = aggregate(); if(!t) return;
     $("heroLabel").textContent = "Net Profit — " + t.label;
     $("heroProfit").textContent = fmt(t.netProfit);
@@ -620,23 +640,6 @@
     $("kRevenue").textContent = fmt(t.revenue);
     $("kProfit").textContent = fmt(t.netProfit);
     $("kCustomers").textContent = t.customers;
-
-    // Growth chip — sirf This Month par, pichle month ke profit se muqabla
-    var gEl = $("heroGrowth");
-    if(gEl){
-      var gShow = false;
-      if(RANGE === "this"){
-        var ck = currentKey(), lk = shiftKey(ck, -1), curM = null, prevM = null;
-        DATA.months.forEach(function(m){ if(m.month === ck) curM = m; if(m.month === lk) prevM = m; });
-        if(curM && prevM && prevM.netProfit !== 0){
-          var pct = (curM.netProfit - prevM.netProfit) / Math.abs(prevM.netProfit) * 100;
-          gEl.textContent = (pct >= 0 ? "▲ " : "▼ ") + Math.abs(pct).toFixed(1) + "% vs Last Month (Net Profit)";
-          gEl.className = "gchip " + (pct >= 0 ? "g-up" : "g-down");
-          gShow = true;
-        }
-      }
-      if(!gShow) gEl.className = "gchip hidden";
-    }
 
     // Ad Efficiency strip — selected period ke liye
     var eff = $("adEff");
@@ -649,6 +652,7 @@
         eff.innerHTML = "💸 <b>Ad Efficiency (" + esc(t.label) + "):</b> Ad Spend <b>Rs 0</b> &nbsp;•&nbsp; Cost Per Order <b>—</b> &nbsp;•&nbsp; Revenue per Ad Rupee <b>—</b>";
       }
     }
+    var nEl0 = $("adEffNote"); if(nEl0) nEl0.classList.add("hidden");
 
     var tools = Object.keys(t.byTool).map(function(k){ return { name:k, sales:t.byTool[k].sales }; })
       .filter(function(x){ return x.sales > 0; }).sort(function(a,b){ return b.sales - a.sales; });
@@ -664,6 +668,10 @@
       return "<span><i style='background:" + TOOL_COLORS[i % TOOL_COLORS.length] + "'></i>" + esc(x.name) + " · " + x.sales + "</span>";
     }).join("") || "<span>Koi order nahi</span>";
 
+    renderBarsRenew();
+  }
+  function renderBarsRenew(){
+    if(!DATA) return;
     var months = DATA.months.slice().reverse();
     var maxP = Math.max.apply(null, months.map(function(m){ return m.netProfit; }).concat([1]));
     $("bars").innerHTML = months.map(function(m){
@@ -681,6 +689,131 @@
     $("genAt").textContent = "Last update: " + (DATA.generatedAt || "—");
     $("app").classList.remove("hidden");
     $("lockScreen").classList.add("hidden");
+  }
+
+  /* ---------- CUSTOM DATE RANGE (Dashboard) ---------- */
+  function fetchAdSpendEntries(){
+    if(ADSPEND && !AD_STALE) return Promise.resolve(ADSPEND);
+    return apiPost("adspendList").then(function(json){
+      if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); throw new Error("auth"); }
+      if(!json || !json.ok) throw new Error((json && json.error) || "error");
+      ADSPEND = json.entries || [];
+      AD_STALE = false;
+      return ADSPEND;
+    });
+  }
+  function computeRange(from, to){
+    return Promise.all([
+      fetchCustomers(false),
+      fetchAdSpendEntries().catch(function(){ return null; })
+    ]).then(function(res){
+      var list = res[0], entries = res[1];
+      var t = { sales:0, revenue:0, cost:0, adSpend:0, netProfit:0, customers:0, byTool:{} };
+      var seen = {};
+      list.forEach(function(c){
+        var d = c.purchaseISO || "";
+        if(!d || d < from || d > to) return;
+        t.sales++;
+        t.revenue += Number(c.selling) || 0;
+        t.cost += Number(c.cost) || 0;
+        var k = custKey(c);
+        if(!seen[k]){ seen[k] = 1; t.customers++; }
+        var tn = c.tool || "Other";
+        if(!t.byTool[tn]) t.byTool[tn] = { sales:0, revenue:0 };
+        t.byTool[tn].sales++;
+        t.byTool[tn].revenue += Number(c.selling) || 0;
+      });
+      var approx = false;
+      if(entries){
+        entries.forEach(function(e){
+          if(e.dateISO && e.dateISO >= from && e.dateISO <= to) t.adSpend += Number(e.amount) || 0;
+        });
+      } else {
+        // Fallback: sirf wo months ginein jine ka poora month range ke andar hai
+        approx = true;
+        (DATA.months || []).forEach(function(m){
+          var p = m.month.split("-");
+          var lastDay = new Date(Date.UTC(parseInt(p[0],10), parseInt(p[1],10), 0)).getUTCDate();
+          if((m.month + "-01") >= from && (m.month + "-" + String(lastDay).padStart(2,"0")) <= to) t.adSpend += m.adSpend;
+        });
+      }
+      t.netProfit = t.revenue - t.cost - t.adSpend;
+      t.label = fmtISODate(from) + " → " + fmtISODate(to);
+      t.hasData = t.sales > 0;
+      return { t: t, approx: approx };
+    });
+  }
+  function paintRange(){
+    var t = CUSTOM.agg; if(!t || !DATA) return;
+    $("heroLabel").textContent = "Net Profit — Custom Range";
+    $("heroProfit").textContent = fmt(t.netProfit);
+    $("heroSub").textContent = "Revenue " + fmt(t.revenue) + " · " + t.sales + " orders · " + t.customers + " customers";
+    $("kActive").textContent = DATA.activePlans;
+    $("kRevenue").textContent = fmt(t.revenue);
+    $("kProfit").textContent = fmt(t.netProfit);
+    $("kCustomers").textContent = t.customers;
+    $("crLabel").textContent = "Range: " + t.label;
+
+    var eff = $("adEff");
+    if(t.adSpend > 0){
+      eff.innerHTML = "💸 <b>Ad Efficiency (Custom Range):</b> Ad Spend <b>" + fmt(t.adSpend) + "</b>" +
+        " &nbsp;•&nbsp; Cost Per Order <b>" + (t.sales ? fmt(t.adSpend / t.sales) : "—") + "</b>" +
+        " &nbsp;•&nbsp; Revenue per Ad Rupee <b>" + (t.revenue / t.adSpend).toFixed(1) + "x</b>";
+    } else {
+      eff.innerHTML = "💸 <b>Ad Efficiency (Custom Range):</b> Ad Spend <b>Rs 0</b> &nbsp;•&nbsp; Cost Per Order <b>—</b> &nbsp;•&nbsp; Revenue per Ad Rupee <b>—</b>";
+    }
+    var nEl = $("adEffNote");
+    if(CUSTOM.approx){
+      nEl.textContent = "Ad spend: poore months gin kar takreeban hisaab hai";
+      nEl.classList.remove("hidden");
+    } else nEl.classList.add("hidden");
+
+    var tools = Object.keys(t.byTool).map(function(k){ return { name:k, sales:t.byTool[k].sales }; })
+      .filter(function(x){ return x.sales > 0; }).sort(function(a,b){ return b.sales - a.sales; });
+    var total = tools.reduce(function(s,x){ return s + x.sales; }, 0);
+    $("donutNum").textContent = total;
+    var acc = 0, parts = [];
+    tools.forEach(function(x, i){
+      var a0 = total ? (acc/total)*360 : 0; acc += x.sales; var a1 = total ? (acc/total)*360 : 0;
+      parts.push(TOOL_COLORS[i % TOOL_COLORS.length] + " " + a0 + "deg " + a1 + "deg");
+    });
+    $("donut").style.background = parts.length ? "conic-gradient(" + parts.join(",") + ")" : "#EEF0F6";
+    $("donutLegend").innerHTML = tools.map(function(x,i){
+      return "<span><i style='background:" + TOOL_COLORS[i % TOOL_COLORS.length] + "'></i>" + esc(x.name) + " · " + x.sales + "</span>";
+    }).join("") || "<span>Koi order nahi</span>";
+  }
+  var RANGE_BUSY = false;
+  function applyCustomRange(){
+    var from = $("crFrom").value, to = $("crTo").value;
+    var errEl = $("crErr");
+    errEl.textContent = "";
+    if(!from || !to){ errEl.textContent = "Dono dates select karein."; return; }
+    if(from > to){ errEl.textContent = "From wali date To se bari hai — dates check karein."; return; }
+    if(RANGE_BUSY) return;
+    RANGE_BUSY = true;
+    $("dashLoading").classList.remove("hidden");
+    computeRange(from, to).then(function(res){
+      RANGE_BUSY = false;
+      $("dashLoading").classList.add("hidden");
+      CUSTOM.from = from; CUSTOM.to = to; CUSTOM.agg = res.t; CUSTOM.approx = res.approx;
+      paintRange();
+    }).catch(function(e){
+      RANGE_BUSY = false;
+      $("dashLoading").classList.add("hidden");
+      if(e && e.message === "auth") return;
+      errEl.textContent = "Range ka data load nahi ho saka — dobara try karein.";
+    });
+  }
+  function renderRangeDashboard(){
+    if(!DATA) return;
+    $("app").classList.remove("hidden");
+    $("lockScreen").classList.add("hidden");
+    $("genAt").textContent = "Last update: " + (DATA.generatedAt || "—");
+    renderBarsRenew();
+    if(!$("crFrom").value) $("crFrom").value = currentKey() + "-01";
+    if(!$("crTo").value) $("crTo").value = todayISO();
+    if(CUSTOM.agg && !CUST_STALE && !AD_STALE && CUSTOM.from === $("crFrom").value && CUSTOM.to === $("crTo").value){ paintRange(); return; }
+    applyCustomRange();
   }
   function renderRenewalsFull(){
     var el = $("renewFullBody"); if(!el || !DATA) return;
@@ -825,9 +958,12 @@
     var groups = {};
     CUSTOMERS.forEach(function(c){
       var k = custKey(c);
-      if(!groups[k]) groups[k] = { gmail: "", phoneDigits: "", orders: 0, total: 0 };
+      if(!groups[k]) groups[k] = { gmail: "", phone: "", phoneDigits: "", orders: 0, total: 0, tools: {} };
       if(!groups[k].gmail && c.gmail) groups[k].gmail = c.gmail;
+      if(!groups[k].phone && c.phone) groups[k].phone = c.phone;
       if(!groups[k].phoneDigits && c.phoneDigits) groups[k].phoneDigits = c.phoneDigits;
+      var tn = c.tool || "Other";
+      groups[k].tools[tn] = (groups[k].tools[tn] || 0) + 1;
       groups[k].orders++;
       groups[k].total += Number(c.selling) || 0;
     });
@@ -836,8 +972,14 @@
     if(!top.length){ el.innerHTML = "<div class='countline'>Koi customer nahi</div>"; return; }
     var h = "<div class='tblwrap'><table class='tbl' style='min-width:0'><thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Kul Kharcha</th><th></th></tr></thead><tbody>";
     top.forEach(function(g, idx){
+      var subs = "";
+      if(g.phone) subs += "<div class='tcsub'>📞 " + esc(g.phone) + "</div>";
+      var tParts = Object.keys(g.tools).map(function(tn){ return { name: tn, n: g.tools[tn] }; })
+        .sort(function(a, b){ return b.n - a.n; })
+        .map(function(x){ return esc(x.name) + " ×" + x.n; });
+      if(tParts.length) subs += "<div class='tcsub'>" + tParts.join(" • ") + "</div>";
       h += "<tr><td><b style='color:var(--text)'>" + (idx + 1) + "</b></td>" +
-        "<td class='cust'>" + esc(g.gmail || "—") + "</td>" +
+        "<td class='cust'>" + esc(g.gmail || "—") + subs + "</td>" +
         "<td>" + g.orders + "</td>" +
         "<td><b style='color:var(--text)'>" + fmt(g.total) + "</b></td>" +
         "<td style='text-align:right'>" + (g.phoneDigits ? "<a class='wa-btn' target='_blank' rel='noopener' href='https://wa.me/" + esc(g.phoneDigits) + "'>WhatsApp</a>" : "") + "</td></tr>";
@@ -1308,8 +1450,23 @@
   document.querySelectorAll(".rangebtns button").forEach(function(b){
     b.addEventListener("click", function(){
       document.querySelectorAll(".rangebtns button").forEach(function(x){ x.classList.remove("on"); });
-      b.classList.add("on"); RANGE = b.getAttribute("data-range"); render();
+      b.classList.add("on"); RANGE = b.getAttribute("data-range");
+      var bar = $("customRangeBar");
+      if(RANGE === "custom"){
+        bar.classList.remove("hidden");
+        if(!$("crFrom").value) $("crFrom").value = currentKey() + "-01";
+        if(!$("crTo").value) $("crTo").value = todayISO();
+      } else {
+        bar.classList.add("hidden");
+        $("adEffNote").classList.add("hidden");
+      }
+      render();
     });
+  });
+  $("crApply").addEventListener("click", function(){
+    if(RANGE !== "custom") return;
+    CUSTOM.agg = null;
+    applyCustomRange();
   });
   $("refreshBtn").addEventListener("click", function(){
     var url = localStorage.getItem(LS_URL), pass = localStorage.getItem(LS_PASS);
