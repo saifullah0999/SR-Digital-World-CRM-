@@ -139,6 +139,11 @@
   .adeff{margin:0 2px 14px;font-size:13.5px;color:var(--muted);background:var(--card);border:1px dashed var(--border);border-radius:12px;padding:11px 15px}
   .adeff b{color:var(--text)}
   .tcsub{color:var(--muted);font-size:12px;font-weight:600;margin-top:2px}
+  .edit-grid select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font-size:13.5px;background:#fff;color:var(--text);outline:none}
+  .edit-grid select:focus{border-color:var(--primary)}
+  .fnote{font-size:12.5px;color:var(--muted);margin-top:6px;font-weight:600;line-height:1.45}
+  .nf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .nf-preview{font-size:13px;color:var(--text);font-weight:700;margin-top:9px;background:var(--bg-soft);border:1px dashed var(--border);border-radius:9px;padding:8px 11px}
   .muted-note{color:var(--muted);font-size:12.5px;margin:-8px 2px 12px}
   .customrange{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin:2px 0 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 15px}
   .customrange label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;display:block}
@@ -339,12 +344,23 @@
               </select>
             </div>
             <div class="fg hidden" id="fToolNameWrap">
-              <label for="fToolName">Tool Name (Other ke liye)</label>
-              <input type="text" id="fToolName" placeholder="Masalan: Netflix, Spotify…">
+              <label for="fToolSel">Tool Name (Other ke liye)</label>
+              <select id="fToolSel"></select>
+              <input type="text" id="fToolName" class="hidden" placeholder="Naya tool name likhein…" autocomplete="off" style="margin-top:8px">
             </div>
             <div class="fg">
               <label for="fGmail">Customer Gmail *</label>
               <input type="text" id="fGmail" placeholder="customer@gmail.com" autocomplete="off">
+              <div class="fnote hidden" id="gmailNfNote">Netflix ke liye neeche wale Profile/PIN bharein — Gmail wala khana khali chalega</div>
+            </div>
+            <div class="fg full hidden" id="nfWrap">
+              <label>🎬 Netflix — Profile tafseel</label>
+              <div class="nf-grid">
+                <div class="fg"><label for="nfProfile">Profile</label><input type="text" id="nfProfile" placeholder="5" autocomplete="off"></div>
+                <div class="fg"><label for="nfPin">PIN Code</label><input type="text" id="nfPin" placeholder="5580" autocomplete="off"></div>
+                <div class="fg"><label for="nfGmail">Account Gmail</label><input type="text" id="nfGmail" placeholder="account@gmail.com" autocomplete="off"></div>
+              </div>
+              <div class="nf-preview hidden" id="nfPreview"></div>
             </div>
             <div class="fg">
               <label for="fPhone">Phone / WhatsApp *</label>
@@ -577,6 +593,7 @@
     if(name === "renewals"){ renderRenewalsFull(); renderFollowups(); renderWinback(); }
     if(name === "adspend") loadAdSpend(false);
     if(name === "reports") renderReports();
+    if(name === "order"){ refreshOrderToolOptions(); updateNetflixState(); }
   }
   document.querySelectorAll(".vtab").forEach(function(b){
     b.addEventListener("click", function(){ showView(b.getAttribute("data-view")); });
@@ -838,6 +855,7 @@
       if(!json || !json.ok) throw new Error((json && json.error) || "error");
       CUSTOMERS = json.customers || [];
       CUST_STALE = false;
+      refreshOrderToolOptions();
       return CUSTOMERS;
     });
   }
@@ -888,7 +906,10 @@
       return "<div><label>" + label + "</label><input type='" + (type || "text") + "' class='" + cls + "' value='" + esc(val == null ? "" : val) + "'></div>";
     }
     var h = "<tr class='editrow'><td colspan='11'><div class='edit-grid'>";
-    if(c.sheet === "Other_Tools_Data") h += fld("e-tool", "Tool Name", c.tool);
+    if(c.sheet === "Other_Tools_Data"){
+      h += "<div><label>Tool Name</label><select class='e-tool-sel'>" + toolSelectOptionsHtml(c.tool) + "</select>" +
+        "<input type='text' class='e-tool hidden' placeholder='Naya tool name likhein…' style='margin-top:6px'></div>";
+    }
     h += fld("e-gmail", "Gmail", c.gmail);
     h += fld("e-phone", "Phone", c.phone);
     h += fld("e-plan", "Plan", c.plan);
@@ -1035,7 +1056,7 @@
         lead: val(".e-lead").trim(),
         notes: val(".e-notes").trim()
       };
-      if(c.sheet === "Other_Tools_Data") payload.tool = val(".e-tool").trim();
+      if(c.sheet === "Other_Tools_Data") payload.tool = resolveToolName(rowEl.querySelector(".e-tool-sel"), rowEl.querySelector(".e-tool"));
       sv.disabled = true; sv.textContent = "Save ho raha hai…";
       apiPost("update", payload).then(function(json){
         if(authFailed(json)){ backToLock("Password ghalat hai — dobara login karke try karein."); return; }
@@ -1126,21 +1147,120 @@
     }).catch(function(){ sel.disabled = false; alert("Network error — dobara try karein."); renderCustomers(); });
   });
 
+  // Edit form: Tool Name dropdown mein "Naya tool likhein…" chunne par text khana khulta hai
+  $("custBody").addEventListener("change", function(ev){
+    var s = ev.target;
+    if(!s || !s.classList || !s.classList.contains("e-tool-sel")) return;
+    var rowEl = s.closest ? s.closest("tr") : null;
+    var inp = rowEl ? rowEl.querySelector(".e-tool") : null;
+    if(inp) inp.classList.toggle("hidden", s.value !== "__custom__");
+  });
+
+  /* ---------- TOOL NAME DROPDOWN (Other tools) ---------- */
+  var BASE_TOOLS = ["Surfshark VPN", "Netflix", "Adobe Express", "MS Office", "LinkedIn Career Premium"];
+  function otherToolNames(){
+    var list = BASE_TOOLS.slice();
+    if(CUSTOMERS){
+      var extra = {};
+      CUSTOMERS.forEach(function(c){
+        if(c.sheet !== "Other_Tools_Data") return;
+        var t = String(c.tool || "").trim();
+        if(t && list.indexOf(t) === -1 && !extra[t]) extra[t] = 1;
+      });
+      Object.keys(extra).sort().forEach(function(t){ list.push(t); });
+    }
+    return list;
+  }
+  function toolSelectOptionsHtml(current){
+    var cur = String(current || "").trim();
+    var names = otherToolNames();
+    var h = "", found = false;
+    names.forEach(function(n){
+      if(n === cur) found = true;
+      h += "<option value='" + esc(n) + "'" + (n === cur ? " selected" : "") + ">" + esc(n) + "</option>";
+    });
+    // Current value list mein na ho to extra option bana kar mehfooz rakhein — value kabhi zaya nahi hoti
+    if(cur && !found) h = "<option value='" + esc(cur) + "' selected>" + esc(cur) + "</option>" + h;
+    h += "<option value='__custom__'>✍️ Naya tool likhein…</option>";
+    return h;
+  }
+  function resolveToolName(selEl, customEl){
+    if(selEl && selEl.value !== "__custom__") return String(selEl.value || "").trim();
+    return customEl ? String(customEl.value || "").trim() : "";
+  }
+  function refreshOrderToolOptions(){
+    var sel = $("fToolSel");
+    if(!sel) return;
+    var custom = $("fToolName");
+    var keepCustom = sel.value === "__custom__";
+    var cur = keepCustom ? "" : resolveToolName(sel, custom);
+    sel.innerHTML = toolSelectOptionsHtml(cur);
+    if(keepCustom) sel.value = "__custom__";
+    if(custom) custom.classList.toggle("hidden", sel.value !== "__custom__");
+  }
+
   /* ---------- NAYA ORDER ---------- */
   function setDefaultDate(){ $("fDate").value = todayISO(); }
   setDefaultDate();
+  $("fToolSel").innerHTML = toolSelectOptionsHtml("");
+  function orderResolvedTool(){
+    if($("fTool").value !== "Other") return $("fTool").value;
+    return resolveToolName($("fToolSel"), $("fToolName"));
+  }
+  function isOrderNetflix(){
+    return $("fTool").value === "Other" && orderResolvedTool().toLowerCase() === "netflix";
+  }
+  function composeNetflixGmail(){
+    var p = $("nfProfile").value.trim(), pin = $("nfPin").value.trim(), g = $("nfGmail").value.trim();
+    var s = "Profile " + p + " ki pin : " + pin;
+    if(g) s += " (" + g + ")";
+    return s;
+  }
+  function updateNfPreview(){
+    var pv = $("nfPreview");
+    if($("nfProfile").value.trim() || $("nfPin").value.trim()){
+      pv.textContent = "Sheet mein aise jayega: " + composeNetflixGmail();
+      pv.classList.remove("hidden");
+    } else {
+      pv.textContent = "";
+      pv.classList.add("hidden");
+    }
+  }
+  function updateNetflixState(){
+    var nf = isOrderNetflix();
+    $("nfWrap").classList.toggle("hidden", !nf);
+    $("gmailNfNote").classList.toggle("hidden", !nf);
+    if(nf) updateNfPreview();
+  }
   $("fTool").addEventListener("change", function(){
     $("fToolNameWrap").classList.toggle("hidden", $("fTool").value !== "Other");
+    updateNetflixState();
   });
+  $("fToolSel").addEventListener("change", function(){
+    $("fToolName").classList.toggle("hidden", $("fToolSel").value !== "__custom__");
+    updateNetflixState();
+  });
+  $("fToolName").addEventListener("input", updateNetflixState);
+  ["nfProfile", "nfPin", "nfGmail"].forEach(function(id){ $(id).addEventListener("input", updateNfPreview); });
   $("orderForm").addEventListener("submit", function(ev){
     ev.preventDefault();
     var msg = $("orderMsg");
     msg.className = "form-msg"; msg.textContent = "";
     var toolSel = $("fTool").value;
+    var resolvedTool = orderResolvedTool();
     var gmail = $("fGmail").value.trim();
     var phone = $("fPhone").value.trim();
     var plan = $("fPlan").value.trim();
     var sellingRaw = $("fSelling").value;
+    // Netflix: Profile/PIN bharein to gmail unhi se banta hai (Customer Gmail walay khanay ki jagah)
+    if(isOrderNetflix() && ($("nfProfile").value.trim() || $("nfPin").value.trim())){
+      if(!$("nfProfile").value.trim() || !$("nfPin").value.trim()){
+        msg.classList.add("err");
+        msg.textContent = "Netflix ke liye Profile aur PIN dono lazmi hain";
+        return;
+      }
+      gmail = composeNetflixGmail();
+    }
     if(!gmail || !phone || !plan || sellingRaw === ""){
       msg.classList.add("err");
       msg.textContent = "Gmail, Phone / WhatsApp, Plan aur Selling Price lazmi bharein.";
@@ -1150,7 +1270,7 @@
     btn.disabled = true; btn.textContent = "Save ho raha hai…";
     apiPost("add", {
       sheet: SHEET_MAP[toolSel],
-      tool: toolSel === "Other" ? $("fToolName").value.trim() : toolSel,
+      tool: resolvedTool,
       gmail: gmail,
       phone: phone,
       plan: plan,
@@ -1173,6 +1293,11 @@
       $("orderForm").reset();
       setDefaultDate();
       $("fToolNameWrap").classList.add("hidden");
+      $("fToolName").classList.add("hidden");
+      $("nfWrap").classList.add("hidden");
+      $("gmailNfNote").classList.add("hidden");
+      $("nfPreview").textContent = "";
+      $("nfPreview").classList.add("hidden");
       CUST_STALE = true; // Customers list agli dafa fresh ayegi
     }).catch(function(){
       btn.disabled = false; btn.textContent = "✅ Order Save Karein";
